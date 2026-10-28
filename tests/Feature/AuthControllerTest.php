@@ -45,7 +45,7 @@ class AuthControllerTest extends TestCase
     /**
      * Public registration cannot grant administrator privileges.
      */
-    public function test_public_registration_ignores_requested_admin_role(): void
+    public function test_public_registration_rejects_requested_admin_role(): void
     {
         $email = $this->faker->unique()->safeEmail;
 
@@ -57,12 +57,10 @@ class AuthControllerTest extends TestCase
             'role' => 'admin',
         ]);
 
-        $response->assertCreated()
-            ->assertJsonPath('user.role', 'user');
+        $response->assertStatus(422);
 
-        $this->assertDatabaseHas('users', [
+        $this->assertDatabaseMissing('users', [
             'email' => $email,
-            'role' => 'user',
         ]);
     }
 
