@@ -43,6 +43,30 @@ class AuthControllerTest extends TestCase
     }
 
     /**
+     * Public registration cannot grant administrator privileges.
+     */
+    public function test_public_registration_ignores_requested_admin_role(): void
+    {
+        $email = $this->faker->unique()->safeEmail;
+
+        $response = $this->postJson('/api/register', [
+            'name' => 'Regular User',
+            'email' => $email,
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role' => 'admin',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('user.role', 'user');
+
+        $this->assertDatabaseHas('users', [
+            'email' => $email,
+            'role' => 'user',
+        ]);
+    }
+
+    /**
      * Teste de falha de registro com erros de validação
      */
     public function test_registration_fails_on_validation_error(): void
